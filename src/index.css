@@ -8,23 +8,23 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 210 11% 15%;
+    --background: 215 28% 17%;
+    --foreground: 210 20% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 210 11% 15%;
+    --card: 215 28% 19%;
+    --card-foreground: 210 20% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 210 11% 15%;
+    --popover: 215 28% 19%;
+    --popover-foreground: 210 20% 98%;
 
     --primary: 210 24% 16%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 210 12% 96%;
-    --secondary-foreground: 210 24% 16%;
+    --secondary: 215 28% 25%;
+    --secondary-foreground: 210 20% 98%;
 
-    --muted: 210 12% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 215 28% 25%;
+    --muted-foreground: 215 20% 65%;
 
     --accent: 158 64% 52%;
     --accent-foreground: 0 0% 98%;
@@ -32,19 +32,19 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 210 24% 16%;
+    --border: 215 28% 27%;
+    --input: 215 28% 27%;
+    --ring: 158 64% 52%;
 
-    /* Sleek gradients */
+    /* Sleek dark gradients */
     --gradient-primary: linear-gradient(135deg, hsl(210 24% 16%), hsl(215 25% 27%));
     --gradient-hero: linear-gradient(135deg, hsl(210 24% 16%), hsl(215 25% 27%), hsl(158 64% 52% / 0.1));
     --gradient-accent: linear-gradient(135deg, hsl(158 64% 52%), hsl(158 64% 62%));
     
-    /* Refined shadows */
-    --shadow-soft: 0 2px 8px -2px hsl(210 24% 16% / 0.08);
-    --shadow-medium: 0 8px 25px -5px hsl(210 24% 16% / 0.15);
-    --shadow-strong: 0 20px 40px -12px hsl(210 24% 16% / 0.25);
+    /* Enhanced shadows for dark theme */
+    --shadow-soft: 0 2px 8px -2px hsl(0 0% 0% / 0.2);
+    --shadow-medium: 0 8px 25px -5px hsl(0 0% 0% / 0.3);
+    --shadow-strong: 0 20px 40px -12px hsl(0 0% 0% / 0.4);
 
     --radius: 0.5rem;
 

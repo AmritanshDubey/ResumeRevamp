@@ -1,9 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Star, Users } from "lucide-react";
+import { AuthButton } from "./auth-button";
 
 export const HeroSection = () => {
   return (
-    <section className="bg-gradient-hero py-20 px-6">
+    <section className="bg-gradient-hero py-20 px-6 relative">
+      {/* Auth Button in top right */}
+      <div className="absolute top-6 right-6 z-10">
+        <AuthButton />
+      </div>
+      
       <div className="container mx-auto max-w-4xl text-center">
         <div className="mb-6 flex justify-center">
           <div className="flex items-center space-x-1 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
