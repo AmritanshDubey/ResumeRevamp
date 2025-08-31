@@ -28,7 +28,7 @@ export const HeroSection = () => {
           <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold px-8 py-3 text-lg shadow-medium">
             Start Free Analysis
           </Button>
-          <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 px-8 py-3 text-lg">
+          <Button variant="outline" size="lg" className="border-accent/60 text-accent hover:bg-accent/10 backdrop-blur-sm bg-white/5 px-8 py-3 text-lg">
             View Sample Report
           </Button>
         </div>
