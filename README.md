@@ -1,73 +1,80 @@
-# Welcome to your Lovable project
+Resume-Revamp
 
-## Project info
+AI-powered resume analysis tool that provides instant feedback, keyword suggestions, and tailored industry tips to help job seekers improve their resumes.
 
-**URL**: https://lovable.dev/projects/e301b593-f0b5-42a6-ab0c-593cc5e574d7
+##Features-
 
-## How can I edit this code?
+Paste your resume text and get an AI-generated score
 
-There are several ways of editing your application.
+Detailed breakdown of strengths and weaknesses
 
-**Use Lovable**
+Keyword suggestions to optimize for Applicant Tracking Systems (ATS)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e301b593-f0b5-42a6-ab0c-593cc5e574d7) and start prompting.
+Industry-specific tips and best practices
 
-Changes made via Lovable will be committed automatically to this repo.
+Download an improved version of your resume
 
-**Use your preferred IDE**
+Secure backend powered by Supabase Edge Functions
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+##Tech Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+##Frontend: Next.js, React, TailwindCSS, ShadCN UI, Lucide Icons
 
-Follow these steps:
+##Backend: Supabase Functions, PostgreSQL
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+#AI Integration: OpenAI API (via Supabase function)
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Setup
+1. Clone the Repository
+git clone https://github.com/your-username/resume-analyzer.git
+cd resume-analyzer
 
-# Step 3: Install the necessary dependencies.
-npm i
+2. Install Dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. Configure Environment Variables
+
+Create a .env.local file in the root directory and add the following:
+
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+OPENAI_API_KEY=your_openai_api_key
+
+4. Supabase Setup
+
+Ensure you have a Supabase account
+.
+
+Install Supabase CLI:
+
+npm install supabase --save-dev
+
+
+Authenticate and link your project:
+
+npx supabase login
+npx supabase link --project-ref your_project_ref
+
+
+Deploy the resume analysis function:
+
+npx supabase functions deploy analyze-resume
+
+5. Run the Project
 npm run dev
-```
 
-**Edit a file directly in GitHub**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+The application will be available at http://localhost:3000
+.
 
-**Use GitHub Codespaces**
+Deployment
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Frontend can be deployed using Vercel
+.
 
-## What technologies are used for this project?
+vercel
 
-This project is built with:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Backend functions should be deployed to Supabase:
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/e301b593-f0b5-42a6-ab0c-593cc5e574d7) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+npx supabase functions deploy analyze-resume
