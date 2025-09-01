@@ -24,24 +24,14 @@ export const ResumeAnalyzer = () => {
       return;
     }
 
-    // Check if user has paid
-    const sessionId = localStorage.getItem('payment_session_id');
-    if (!sessionId) {
-      toast({
-        title: "Payment Required",
-        description: "Please complete payment to access AI-powered resume analysis.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsAnalyzing(true);
-    
+
     try {
-      const { data, error } = await supabase.functions.invoke('analyze-resume', {
+      // Always allow analysis (skip payment check)
+      const { data, error } = await supabase.functions.invoke("analyze-resume", {
         body: { 
           resumeText: resumeText.trim(),
-          sessionId: sessionId
+          sessionId: "free-demo-session"
         }
       });
 
@@ -50,24 +40,20 @@ export const ResumeAnalyzer = () => {
       }
 
       setAnalysis(data);
-      
+
       toast({
         title: "Analysis Complete!",
         description: "Your resume has been analyzed by AI. Check the results below.",
       });
-      
-      // Clear the session ID after successful analysis
-      localStorage.removeItem('payment_session_id');
-      
-    } catch (error) {
-      console.error('Analysis error:', error);
+    } catch (error: any) {
+      console.error("Analysis error:", error);
       toast({
         title: "Analysis Failed",
         description: error.message || "Failed to analyze resume. Please try again.",
         variant: "destructive",
       });
     }
-    
+
     setIsAnalyzing(false);
   };
 
