@@ -12,10 +12,9 @@ Keyword suggestions to optimize for Applicant Tracking Systems (ATS)
 
 Industry-specific tips and best practices
 
-Download an improved version of your resume
-
 Secure backend powered by Supabase Edge Functions
 
+Stripe Api Integrated along with superbase for user verification.
 ##Tech Stack
 
 ##Frontend: Next.js, React, TailwindCSS, ShadCN UI, Lucide Icons
