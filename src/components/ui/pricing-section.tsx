@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Crown, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const plans = [
   {
@@ -20,7 +22,7 @@ const plans = [
   },
   {
     name: "Pro",
-    price: "$19",
+    price: "₹399",
     period: "one-time",
     description: "Everything you need for job hunting",
     features: [
@@ -38,6 +40,39 @@ const plans = [
 ];
 
 export const PricingSection = () => {
+  const { toast } = useToast();
+
+  const handleUpgrade = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Login Required",
+          description: "Please log in to purchase the pro version.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-payment');
+      
+      if (error) {
+        throw error;
+      }
+
+      // Open Stripe checkout in a new tab
+      window.open(data.url, '_blank');
+      
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast({
+        title: "Payment Error",
+        description: error.message || "Failed to initiate payment. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
   return (
     <section className="py-20 px-6 bg-card/30">
       <div className="container mx-auto max-w-4xl">
@@ -94,6 +129,7 @@ export const PricingSection = () => {
                   className={`w-full ${
                     plan.popular ? 'bg-gradient-primary hover:opacity-90' : ''
                   }`}
+                  onClick={plan.popular ? handleUpgrade : undefined}
                 >
                   {plan.popular && <Sparkles className="mr-2 h-4 w-4" />}
                   {plan.buttonText}

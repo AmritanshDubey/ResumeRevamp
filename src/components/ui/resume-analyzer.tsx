@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { FileText, Sparkles, Download, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const ResumeAnalyzer = () => {
   const [resumeText, setResumeText] = useState("");
@@ -23,61 +24,51 @@ export const ResumeAnalyzer = () => {
       return;
     }
 
+    // Check if user has paid
+    const sessionId = localStorage.getItem('payment_session_id');
+    if (!sessionId) {
+      toast({
+        title: "Payment Required",
+        description: "Please complete payment to access AI-powered resume analysis.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsAnalyzing(true);
     
-    // Simulate AI analysis
-    setTimeout(() => {
-      setAnalysis({
-        score: 82,
-        strengths: [
-          "Strong technical skills section with relevant technologies",
-          "Quantified achievements with specific metrics",
-          "Clear professional summary highlighting key experience",
-          "Well-structured work experience with action verbs"
-        ],
-        weaknesses: [
-          "Missing keywords for ATS optimization",
-          "Could benefit from more industry-specific terminology",
-          "Some bullets could be more impactful with stronger verbs",
-          "Consider adding relevant certifications or training"
-        ],
-        improvedVersion: `JOHN SMITH
-Senior Software Engineer | Full-Stack Developer
-
-PROFESSIONAL SUMMARY
-Results-driven Senior Software Engineer with 5+ years of experience building scalable web applications. Proven track record of leading cross-functional teams and delivering high-impact solutions that increased user engagement by 40% and reduced system downtime by 60%.
-
-CORE COMPETENCIES
-• Frontend: React, TypeScript, Next.js, Vue.js, HTML5, CSS3
-• Backend: Node.js, Python, Java, REST APIs, GraphQL
-• Database: PostgreSQL, MongoDB, Redis
-• Cloud: AWS, Docker, Kubernetes, CI/CD
-• Leadership: Team management, agile methodologies, code reviews
-
-PROFESSIONAL EXPERIENCE
-
-Senior Software Engineer | TechCorp Inc. | 2021 - Present
-• Architected and developed microservices-based platform serving 100K+ daily active users
-• Led team of 6 developers, improving code quality scores by 35% through implementation of best practices
-• Optimized database queries resulting in 50% faster page load times
-• Spearheaded migration to cloud infrastructure, reducing operational costs by 30%
-
-Software Engineer | StartupXYZ | 2019 - 2021
-• Built responsive web applications using React and Node.js, supporting 50K+ registered users
-• Implemented automated testing suite, increasing code coverage from 40% to 90%
-• Collaborated with product team to define technical requirements for new features
-• Mentored 3 junior developers, contributing to 25% faster onboarding process
-
-EDUCATION
-Bachelor of Science in Computer Science | University of Technology | 2019
-Relevant Coursework: Data Structures, Algorithms, Software Engineering, Database Systems
-
-CERTIFICATIONS
-• AWS Certified Solutions Architect (2022)
-• Certified Scrum Master (2021)`
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-resume', {
+        body: { 
+          resumeText: resumeText.trim(),
+          sessionId: sessionId
+        }
       });
-      setIsAnalyzing(false);
-    }, 3000);
+
+      if (error) {
+        throw error;
+      }
+
+      setAnalysis(data);
+      
+      toast({
+        title: "Analysis Complete!",
+        description: "Your resume has been analyzed by AI. Check the results below.",
+      });
+      
+      // Clear the session ID after successful analysis
+      localStorage.removeItem('payment_session_id');
+      
+    } catch (error) {
+      console.error('Analysis error:', error);
+      toast({
+        title: "Analysis Failed",
+        description: error.message || "Failed to analyze resume. Please try again.",
+        variant: "destructive",
+      });
+    }
+    
+    setIsAnalyzing(false);
   };
 
   return (
@@ -185,6 +176,42 @@ CERTIFICATIONS
                         ))}
                       </ul>
                     </div>
+
+                    <Separator />
+
+                    {/* Keywords */}
+                    {analysis.keywordSuggestions && (
+                      <div>
+                        <h4 className="font-semibold text-blue-600 mb-3">
+                          Recommended Keywords
+                        </h4>
+                        <ul className="space-y-2">
+                          {analysis.keywordSuggestions.map((keyword: string, index: number) => (
+                            <li key={index} className="text-sm text-muted-foreground">
+                              • {keyword}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {analysis.industrySpecificTips && (
+                      <>
+                        <Separator />
+                        <div>
+                          <h4 className="font-semibold text-purple-600 mb-3">
+                            Industry Tips
+                          </h4>
+                          <ul className="space-y-2">
+                            {analysis.industrySpecificTips.map((tip: string, index: number) => (
+                              <li key={index} className="text-sm text-muted-foreground">
+                                • {tip}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
 
