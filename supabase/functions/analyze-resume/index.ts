@@ -1,104 +1,52 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
+// --- Env ---
+const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
+const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
+// Turn this on in dev: Settings → Functions → Add secret FREE_MODE=true
+const FREE_MODE =
+  (Deno.env.get("FREE_MODE") || "").toLowerCase() === "true" ||
+  (Deno.env.get("NODE_ENV") || "").toLowerCase() === "development";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+  // CORS preflight
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { resumeText, sessionId } = await req.json();
 
-    if (!resumeText || !sessionId) {
-      throw new Error("Resume text and session ID are required");
+    if (!resumeText || typeof resumeText !== "string") {
+      return new Response(
+        JSON.stringify({ error: "resumeText is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
-    // 🚨 Development/demo bypass
-    if (Deno.env.get("NODE_ENV") === "development") {
-      console.log(`Bypassing Stripe check for session: ${sessionId}`);
+    // --- Payment bypass logic ---
+    const skipStripe =
+      FREE_MODE ||
+      !STRIPE_SECRET_KEY || // if Stripe key missing, treat as free mode
+      sessionId === "free-demo-session"; // from the frontend we just set this
+
+    if (skipStripe) {
+      console.log("analyze-resume: skipping Stripe verification (FREE_MODE).");
     } else {
-      // 🔒 Production: enforce payment
-      const stripe = new Stripe(stripeSecretKey || "", { apiVersion: "2023-10-16" });
-      const session = await stripe.checkout.sessions.retrieve(sessionId);
-      
-      if (session.payment_status !== 'paid') {
-        throw new Error("Payment not completed");
+      if (!sessionId) {
+        return new Response(
+          JSON.stringify({ error: "sessionId is required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
       }
 
-      console.log(`Processing resume analysis for paid session: ${sessionId}`);
-    }
-
-    // Analyze resume with OpenAI
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: `You are an expert resume analyst and career coach. Analyze the provided resume and return a JSON response with this structure:
-            {
-              "score": number (1-100),
-              "strengths": [array of specific strengths found],
-              "weaknesses": [array of specific areas for improvement],
-              "keywordSuggestions": [array of industry keywords to add],
-              "improvedVersion": "string with improved resume version",
-              "industrySpecificTips": [array of industry-specific recommendations]
-            }`
-          },
-          {
-            role: 'user',
-            content: `Please analyze this resume:\n\n${resumeText}`
-          }
-        ],
-        max_tokens: 3000,
-        temperature: 0.3,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    let analysis;
-    
-    try {
-      analysis = JSON.parse(data.choices[0].message.content);
-    } catch {
-      const content = data.choices[0].message.content;
-      analysis = {
-        score: 75,
-        strengths: ["Professional experience documented", "Skills section present"],
-        weaknesses: ["Needs more quantified achievements", "Could benefit from stronger action verbs"],
-        keywordSuggestions: ["Industry-specific terms needed", "Technical skills optimization"],
-        improvedVersion: content,
-        industrySpecificTips: ["Focus on metrics and outcomes", "Optimize for ATS systems"]
-      };
-    }
-
-    return new Response(JSON.stringify(analysis), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
-    console.error('Error in analyze-resume function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-});
+      const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" });
+      const session = await stripe.checkout.sessions.r
