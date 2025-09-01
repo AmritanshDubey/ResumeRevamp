@@ -12,7 +12,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -24,15 +23,20 @@ serve(async (req) => {
       throw new Error("Resume text and session ID are required");
     }
 
-    // Verify payment with Stripe
-    const stripe = new Stripe(stripeSecretKey || "", { apiVersion: "2023-10-16" });
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-    
-    if (session.payment_status !== 'paid') {
-      throw new Error("Payment not completed");
-    }
+    // 🚨 Development/demo bypass
+    if (Deno.env.get("NODE_ENV") === "development") {
+      console.log(`Bypassing Stripe check for session: ${sessionId}`);
+    } else {
+      // 🔒 Production: enforce payment
+      const stripe = new Stripe(stripeSecretKey || "", { apiVersion: "2023-10-16" });
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+      
+      if (session.payment_status !== 'paid') {
+        throw new Error("Payment not completed");
+      }
 
-    console.log(`Processing resume analysis for paid session: ${sessionId}`);
+      console.log(`Processing resume analysis for paid session: ${sessionId}`);
+    }
 
     // Analyze resume with OpenAI
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -46,7 +50,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert resume analyst and career coach. Analyze the provided resume and return a JSON response with the following structure:
+            content: `You are an expert resume analyst and career coach. Analyze the provided resume and return a JSON response with this structure:
             {
               "score": number (1-100),
               "strengths": [array of specific strengths found],
@@ -54,15 +58,7 @@ serve(async (req) => {
               "keywordSuggestions": [array of industry keywords to add],
               "improvedVersion": "string with improved resume version",
               "industrySpecificTips": [array of industry-specific recommendations]
-            }
-            
-            Focus on:
-            - ATS optimization
-            - Quantified achievements
-            - Industry keywords
-            - Professional formatting
-            - Action verbs and impact statements
-            - Skills alignment with job market trends`
+            }`
           },
           {
             role: 'user',
@@ -83,8 +79,7 @@ serve(async (req) => {
     
     try {
       analysis = JSON.parse(data.choices[0].message.content);
-    } catch (parseError) {
-      // Fallback if JSON parsing fails
+    } catch {
       const content = data.choices[0].message.content;
       analysis = {
         score: 75,
@@ -95,8 +90,6 @@ serve(async (req) => {
         industrySpecificTips: ["Focus on metrics and outcomes", "Optimize for ATS systems"]
       };
     }
-
-    console.log(`Resume analysis completed for session: ${sessionId}`);
 
     return new Response(JSON.stringify(analysis), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
