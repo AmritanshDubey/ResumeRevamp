@@ -27,7 +27,21 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
 
-    // Initialize Stripe
+    // 🚨 Development/demo bypass (no Stripe)
+    if (Deno.env.get("NODE_ENV") === "development") {
+      console.log(`Bypassing payment for user ${user.email}`);
+      return new Response(
+        JSON.stringify({
+          url: `${req.headers.get("origin")}/payment-success?session_id=demo`,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
+    }
+
+    // 🔒 Production: Use Stripe checkout
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
     });
